@@ -124,6 +124,47 @@ Good = `Sent <nonzero> bytes` with **no** `Bad CPU type` / `badarch` lines.
 an `arm64e.x1` target it doesn't understand (`unknown architecture`). Build
 against the stable **SDK 26.5**; `build.sh` already prefers it.
 
+## Printer hardware & connectivity
+
+Model: **4BARCODE / ZiJiang 4B‑2054A** (OEM: ZiJiang; Seagull/BarTender driver line).
+This unit is a **4B‑2054A** (USB serial `254AWE…`, model token `254A`).
+
+### Interfaces (4B‑2054 family product matrix)
+| Variant SKU | USB | Ethernet (LAN) | Wi‑Fi | Bluetooth |
+|---|---|---|---|---|
+| **2054A‑USB** | ✓ | — | — | — |
+| **2054A‑LAN** | ✓ | ✓ | — | — |
+| 2054K‑USB | ✓ | — | — | — |
+| 2054K‑LAN | ✓ | ✓ | — | — |
+| 2054K‑WF | ✓ | ✓ | ✓ | — |
+| 2054K‑AP | ✓ | ✓ | ✓ (AP mode) | — |
+| 2054K‑BT | ✓ | — | — | ✓ |
+
+* Base spec: `Interface: USB 2.0`. The physical **platform** (per the 4B‑2054A
+  series manual, Rear View) exposes **USB + RS‑232C (DB‑9) + Ethernet + SD card**;
+  **Wi‑Fi/Bluetooth are SKU options**, seen only on the **‑K** line (`‑WF/‑AP/‑BT`).
+* Bluetooth is rare on these desktop label printers; **Ethernet** is the common
+  non‑USB option. The **"A"** models are USB (optionally USB+LAN).
+
+### What this Mac sees (USB)
+* USB vendor `0x2D84` (11652), product `0xB488` (46184), strings "4BARCODE / 4B‑2054A".
+* `bNumConfigurations=1`, full‑speed (12 Mbps), single printer interface → the
+  USB connection exposes **no** network/BT function.
+* macOS CUPS connection = `direct` (USB).
+
+### Investigation cues for later
+* **To know if THIS unit is USB‑only vs USB+LAN:** inspect the rear panel.
+  RJ‑45 jack (+/‑ LEDs) → `2054A‑LAN`. Antenna/`WF`/`AP`/`BT` label → wireless.
+  Only USB‑B + power barrel → `2054A‑USB`.
+* **Is it already on the LAN?** `arp -a | grep -iE 'zijiang|barcode|printer|00:1d|0c:08'`
+* **Read the 1284 DeviceID** (may reveal interfaces/protocol):
+  `system_profiler SPUSBDataType | grep -A12 2054`  ·  or a USB control string read.
+* **Enable network printing** if it has Ethernet (no new driver needed — same PPD
+  + this filter works over socket):
+  `sudo lpadmin -p LABEL_NET -E -v socket://<printer-ip>:9100 -P /private/etc/cups/ppd/_4BARCODE_4B_2054A.ppd`
+* Sources: ARKSCAN/4BARCODE "2054" product spec (variant matrix), and the
+  4B‑2054A series User Manual (Rear View / interface setup chapters).
+
 ## Troubleshooting
 
 * **Bytes are sent but no physical label** → the driver is fine; check the
