@@ -1,0 +1,8 @@
+# build intermediates
+.build-objects/
+# macOS
+.DS_Store
+# transient test artifacts
+*.out
+*.ras
+*.pdf
