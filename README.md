@@ -80,6 +80,7 @@ Both slices of the built binary reproduce the Intel output exactly.
 | `build.sh`            | Rebuild (works around the SDK‑27 linker bug) |
 | `install.sh`          | Back up + install over the Intel filter (needs sudo) |
 | `rollback.sh`         | Restore the original Intel filter |
+| `docs/DRIVER-JOURNAL.md`| Full engineering journal: diagnosis, reverse-engineering, testing (with diagrams) |
 | `AGENTS.md`           | Guidance for AI coding agents working in this repo |
 | `README.md`           | This file |
 
