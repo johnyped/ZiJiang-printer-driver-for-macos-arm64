@@ -22,6 +22,12 @@ stream into the printer's **TSPL2** command language.
    1/24/32-bit branches in `rastertolabel_arm.c` are defensive only; they are
    NOT verified identical to the Intel filter, so do not treat them as the
    reference path.
+5. **Colour/grayscale dithering is OPT-IN** (`-o dither=floyd|ordered`, `-o gamma=`)
+   parsed from `argv[5]`. With **no options** the filter MUST take the exact
+   `gray<128` threshold branch and stay byte-identical to the Intel reference.
+   Do not make dithering the default; do not route the default path through the
+   error-diffusion code (its integer rounding changes bytes).
+
 
 ## Layout
 - `rastertolabel_arm.c` — the filter source (single file, links `libcups`+`libcupsimage`).

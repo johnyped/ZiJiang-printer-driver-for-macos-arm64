@@ -14,7 +14,7 @@ SDK="$(xcode-select -p 2>/dev/null)/SDKs/MacOSX26.5.sdk"
 EXTRA=""
 case "$SDK" in *MacOSX27*) EXTRA="-target arm64-apple-macos13";; esac
 CFLAGS="$(cups-config --cflags)"
-LIBS="$(cups-config --libs) -lcupsimage"
+LIBS="$(cups-config --libs) -lcupsimage -lm"
 cc -arch arm64  -mmacosx-version-min=13.0 -isysroot "$SDK" -O2 $EXTRA -w -o "$HERE/.build-objects/arm64"  "$HERE/rastertolabel_arm.c" $CFLAGS $LIBS
 cc -arch x86_64 -mmacosx-version-min=13.0 -isysroot "$SDK" -O2 $EXTRA -w -o "$HERE/.build-objects/x86_64" "$HERE/rastertolabel_arm.c" $CFLAGS $LIBS
 lipo -create -output "$HERE/rastertolabel" "$HERE/.build-objects/arm64" "$HERE/.build-objects/x86_64"

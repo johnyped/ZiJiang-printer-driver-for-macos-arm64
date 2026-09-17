@@ -166,6 +166,41 @@ This unit is a **4B‑2054A** (USB serial `254AWE…`, model token `254A`).
 * Sources: ARKSCAN/4BARCODE "2054" product spec (variant matrix), and the
   4B‑2054A series User Manual (Rear View / interface setup chapters).
 
+## Colour documents → grayscale (dithering)
+
+The 4B‑2054A is **physically monochrome** (direct thermal: burn or no burn, black
+on white). It can never print colour. macOS already converts colour documents to
+an **8‑bit grayscale** raster (via `cgpdftoraster`) before this filter runs.
+
+By default the filter **hard‑thresholds** that grayscale (same as the original
+Intel filter, `black = gray < 128`) — best for text and 1‑bit logos, but it makes
+photos/gradients come out as harsh black/white blocks, and very light colours
+(yellow/cyan) can disappear.
+
+Two **opt-in** rendering modes improve photographic/gradient content:
+
+| Option | Effect |
+|---|---|
+| `dither=floyd` | Floyd–Steinberg error diffusion — smooth photographic tones |
+| `dither=ordered` | Bayer 8×8 ordered halftone — regular rosette, faster |
+| `gamma=<1.0–5.0>` | Tone lift; `>1.0` darkens so light colours survive as dots |
+
+**Default (no options) reproduces the original bytes exactly** — see `make test`.
+
+### Use it
+```bash
+# one job:
+some-color-file | lp -d _4BARCODE_4B_2054A -o dither=floyd
+lp -d _4BARCODE_4B_2054A -o dither=floyd -o gamma=1.4 photo.pdf
+# make it the queue default (every print gets dithered grayscale):
+sudo lpadmin -p _4BARCODE_4B_2054A -o dither=floyd
+# revert to crisp threshold:
+sudo lpadmin -p _4BARCODE_4B_2054A -o dither=off
+```
+Verified on a colour gradient raster (798×798): hard-threshold shows ~5
+black/white transitions per row (blocky); `dither=floyd` ~371 (smooth), `dither=ordered`
+~139 (rosette) — all at the correct mid-tone ink density (~0.24).
+
 ## Troubleshooting
 
 * **Bytes are sent but no physical label** → the driver is fine; check the
