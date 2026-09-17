@@ -201,6 +201,18 @@ Verified on a colour gradient raster (798×798): hard-threshold shows ~5
 black/white transitions per row (blocky); `dither=floyd` ~371 (smooth), `dither=ordered`
 ~139 (rosette) — all at the correct mid-tone ink density (~0.24).
 
+### Why a red logo can print as solid black
+A coloured fill is converted to one grayscale value (e.g. red `220,89,59` → ~115
+by Rec.709). The **default threshold** makes anything `<128` fully black, so that
+red prints as a solid black block — no gray. Fix = turn on dithering, which maps
+the flat value 115 to ~55% black dots = mid gray:
+```bash
+lp -d _4BARCODE_4B_2054A -o dither=floyd your.pdf
+# or make it permanent for this printer:
+sudo lpadmin -p _4BARCODE_4B_2054A -o dither=floyd
+```
+Tune with `gamma` ( <1 lightens, >1 darkens ) if the gray is too dark/light.
+
 ## Troubleshooting
 
 * **Bytes are sent but no physical label** → the driver is fine; check the

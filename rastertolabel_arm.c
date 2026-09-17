@@ -218,9 +218,10 @@ main(int argc, char **argv)
                     errB[x]            += e * 5;                /* below       */
                     if (x + 1 < (int)w) errB[x + 1] += e * 1;   /* below-right */
                 } else if (g_dither == DITHER_ORDERED) {
-                    int bv  = BAYER[((y & 7) << 3) | (x & 7)] >> 2;  /* 0..63 */
-                    int thr = 128 + (bv - 31);                          /* ~97..159 */
-                    black = (clampi(v) < thr);
+                    /* full-range Bayer threshold so any tone (not just mid-
+                       greys) dithers: black where value < a 0..253 cell cut. */
+                    int thr = BAYER[((y & 7) << 3) | (x & 7)];         /* 0..252  */
+                    black = (clampi(v) <= thr);
                 } else {                                /* gamma-only threshold */
                     black = (v < 128);
                 }
