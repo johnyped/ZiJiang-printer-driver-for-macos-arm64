@@ -187,6 +187,42 @@ Two **opt-in** rendering modes improve photographic/gradient content:
 
 **Default (no options) reproduces the original bytes exactly** — see `make test`.
 
+### What is dithering? (ordered vs Floyd)
+
+A thermal dot is only ever **burn (black)** or **no burn (white)** — the printer
+cannot lay down a partial gray. **Dithering fakes a tone by spacing black dots
+among white ones:** dense dots read as dark, sparse dots read as light, and your
+eye averages them across the ~0.13 mm dot pitch.
+
+Both modes below convert the same gray value `g` into a 1‑bit dot pattern; they
+just decide *where* to place the dots:
+
+- **`dither=floyd` — Floyd–Steinberg *error diffusion*.** Each pixel is rounded to
+  black/white, and the rounding *error is pushed onto its not‑yet‑drawn
+  neighbours* (7/16 right, 3/16 below‑left, 5/16 below, 1/16 below‑right). The
+  dots self‑arrange into an organic, noise‑like screen.
+- **`dither=ordered` — Bayer *threshold matrix*.** The pixel is compared against a
+  fixed, repeating 8×8 grid of cutoffs spread over 0–255. Dots land on a regular
+  lattice → a clean, predictable **rosette/screen** pattern.
+
+```
+light g=200 →  sparse dots  (looks light gray)
+mid   g=128 →  50% dots     (looks mid gray)
+dark  g= 60 →  dense dots   (looks dark gray)
+```
+
+|  | `ordered` (Bayer) | `floyd` (error diffusion) |
+|---|---|---|
+| Dot pattern | regular grid / rosette | organic speckle, noise‑like |
+| Speed | very fast, trivially parallel | slower, must go row‑by‑row |
+| Flat tones | can show faint screen lines | smoother, near‑photographic |
+| Gradients | banding visible | gradual, best for photos |
+| Small text / 1‑bit logos | can fuzz edges | can fuzz edges |
+| **Best for** | line art, logos, speed | photos, smooth gradients |
+
+Rule of thumb: **`floyd` for photographs/gradients, `ordered` for logos/line art
+or when you want the fastest render, none (default) for crisp text and barcodes.**
+
 ### Use it
 ```bash
 # one job:

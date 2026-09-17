@@ -298,6 +298,31 @@ should go.
 
 ---
 
+### 5.1 Dithering: how one gray value becomes dots (ordered vs Floyd)
+
+A thermal dot is binary — burn or no burn — so a gray tone is faked by **dot
+density**: cluster black dots to read dark, spread them to read light. Our filter
+offers two placements:
+
+* **Floyd–Steinberg error diffusion** (`dither=floyd`): round each pixel, then
+  push the rounding error onto un‑visited neighbours with weights 7/16 (right),
+  3/16/5/16/1/16 (below row). Produces an organic, photographic‑looking screen.
+* **Bayer ordered dither** (`dither=ordered`): compare each pixel against a fixed
+  repeating 8×8 matrix of thresholds spanning 0–255. Produces a regular rosette.
+
+|  | ordered | floyd |
+|---|---|---|
+| pattern | regular lattice | organic noise |
+| speed | very fast | row‑sequential |
+| gradients | visible banding | smooth |
+| best for | logos / line art | photos / gradients |
+
+Default (neither) is a hard `g<128` threshold — crisp for text, but flat colours
+whose luminance sits just under 128 (e.g. red `220,89,59` → ~115) collapse to
+**solid black**; dithering instead renders them as ~55% dots = gray. Both modes
+must **not** alter the default byte‑identical path.
+
+
 ## 6. Two subtle bugs (and how we caught them)
 
 Both were invisible to "does it look right" and obvious only via the byte-diff.
